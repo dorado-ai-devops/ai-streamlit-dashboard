@@ -3,7 +3,7 @@ VERSION=v0.2.0
 CLUSTER_NAME=devops-ai
 REGISTRY=localhost:5000
 HELM_VALUES=../devops-ai-lab/manifests/helm-dashboard/values.yaml
-ARGO_APP_NAME=ai-streamlit-dashboard
+ARGO_APP_NAME=ai-dashboard
 
 .PHONY: all build tag push load update-values sync release run
 
