@@ -2,19 +2,20 @@ import streamlit as st
 import pandas as pd
 import os
 import json
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 # Configuración inicial
 st.set_page_config(page_title="AI DevOps Dashboard", layout="wide")
 st.title("📊 DevOps IA Dashboard")
-st.markdown("Visualiza las interacciones de los LLMs con los logs, Helm Charts y generacion de pipelines.")
+st.markdown("Visualiza las interacciones de los LLMs con logs, Helm Charts y generación de pipelines.")
 st.markdown("---")
 
-# Rutas
+# Rutas base
 BASE_DIR = os.environ.get("BASE_DIR", "/mnt/data")
 MCP_DIR = os.path.join(BASE_DIR, "mcp")
 GATEWAY_DIR = os.path.join(BASE_DIR, "gateway")
 
-# Función para leer los contenidos
+# Leer archivos de texto
 def leer_contenido(path):
     if not path:
         return ""
@@ -27,7 +28,7 @@ def leer_contenido(path):
     except Exception:
         return ""
 
-# Cargar datos
+# Cargar registros
 @st.cache_data
 def load_data():
     records = []
@@ -62,16 +63,16 @@ if df.empty:
     st.warning("No se han encontrado datos para mostrar.")
     st.stop()
 
-# Filtros
+# Filtros laterales
 st.sidebar.header("Filtros")
 microservices = st.sidebar.multiselect(
     "Filtrar por microservicio",
-    options=sorted(df["microservice"].dropna().unique()),
+    sorted(df["microservice"].dropna().unique()),
     default=list(df["microservice"].dropna().unique())
 )
 types = st.sidebar.multiselect(
     "Filtrar por tipo",
-    options=sorted(df["type"].dropna().unique()),
+    sorted(df["type"].dropna().unique()),
     default=list(df["type"].dropna().unique())
 )
 
@@ -79,34 +80,42 @@ df_filtered = df[
     df["microservice"].isin(microservices) & df["type"].isin(types)
 ]
 
-# Tabla
+# Configuración de AgGrid
 st.markdown("### Registros encontrados")
-st.dataframe(df_filtered[["timestamp", "type", "microservice", "summary", "tags"]], use_container_width=True)
+gb = GridOptionsBuilder.from_dataframe(df_filtered[["timestamp", "type", "microservice", "summary", "tags"]])
+gb.configure_pagination(paginationAutoPageSize=True)
+gb.configure_default_column(groupable=False, editable=False, filter=True, resizable=True)
+gb.configure_selection('single', use_checkbox=True)
+grid_options = gb.build()
 
-# Detalle
-st.markdown("### Detalle de ejecución")
-if not df_filtered.empty:
-    row = st.selectbox(
-        "Selecciona una fila",
-        df_filtered.index,
-        format_func=lambda i: f"{df_filtered.loc[i]['timestamp']} | {df_filtered.loc[i]['microservice']} | {df_filtered.loc[i]['summary'][:50]}..."
-    )
-    selected = df_filtered.loc[row]
+grid_response = AgGrid(
+    df_filtered,
+    gridOptions=grid_options,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    theme="streamlit",
+    fit_columns_on_grid_load=True
+)
+
+# Mostrar detalle si se selecciona una fila
+if grid_response['selected_rows']:
+    selected = pd.DataFrame(grid_response['selected_rows']).iloc[0]
+
+    st.markdown("### Detalle de ejecución seleccionado")
 
     with st.expander("🔍 Input"):
-        st.text(selected["input"])
+        st.code(selected["input"], language="bash")
 
     with st.expander("📤 Prompt enviado"):
-        st.text(selected["prompt"])
+        st.code(selected["prompt"], language="markdown")
 
     with st.expander("📥 Respuesta del modelo"):
-        st.text(selected["response"])
+        st.code(selected["response"], language="markdown")
 
     st.download_button(
         label="📥 Descargar resultado",
-        data=selected.to_csv().encode("utf-8"),
+        data=pd.DataFrame([selected]).to_csv(index=False).encode("utf-8"),
         file_name=f"registro_{selected['timestamp']}.csv",
         mime="text/csv"
     )
 else:
-    st.info("No hay registros que coincidan con el filtro seleccionado.")
+    st.info("Selecciona un registro en la tabla para ver los detalles.")
