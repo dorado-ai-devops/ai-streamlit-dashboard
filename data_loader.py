@@ -46,6 +46,7 @@ def load_data():
         records.append({
             "timestamp": data.get("timestamp", ""),
             "type": data.get("type", ""),
+            "microservice": data.get("microservice", ""),
             "summary": data.get("summary", ""),
             "tags": ", ".join(data.get("tags", [])),
             "prompt": leer_contenido(data.get("prompt_path")),
