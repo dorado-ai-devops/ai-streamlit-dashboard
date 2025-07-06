@@ -31,6 +31,7 @@ Built with Streamlit and ready for future agent integration.
 - 🇬🇧 [README in English](./README_ai_streamlit_dashboard.md)  
   _Full guide to features, structure, and setup._
 
+
 ---
 
 📌 En este índice se añadirá próximamente un esquema visual del flujo IA.  
