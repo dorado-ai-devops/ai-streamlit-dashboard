@@ -2,33 +2,33 @@ import os
 import json
 import pandas as pd
 
-# Base del volumen montado en el contenedor
+# Rutas base montadas en el contenedor
 BASE_DIR = os.environ.get("BASE_DIR", "/mnt/data")
 MCP_DIR = os.path.join(BASE_DIR, "mcp")
 GATEWAY_DIR = os.path.join(BASE_DIR, "gateway")
 
-def leer_contenido(path):
+def leer_contenido(path: str) -> str:
     if not path:
         return ""
 
-    # Reescribe el path virtual usado en los JSON para que apunte al volumen real
-    real_path = path.replace("/app/outputs/", GATEWAY_DIR + "/")
+    # Normaliza rutas que vienen del contenedor
+    if path.startswith("/app/outputs/"):
+        path = path.replace("/app/outputs/", GATEWAY_DIR + "/")
 
-    if not os.path.exists(real_path):
+    if not os.path.exists(path):
         return ""
 
     try:
-        with open(real_path, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             return f.read()
     except Exception:
         return ""
 
-def load_data():
-    records = []
-
+def load_data() -> pd.DataFrame:
     if not os.path.exists(MCP_DIR):
         return pd.DataFrame()
 
+    records = []
     for filename in os.listdir(MCP_DIR):
         if not filename.endswith(".json"):
             continue
@@ -40,6 +40,7 @@ def load_data():
         except Exception:
             continue
 
+        # Campos mínimos obligatorios
         if "type" not in data or "timestamp" not in data:
             continue
 
