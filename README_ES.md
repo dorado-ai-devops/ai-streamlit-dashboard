@@ -2,7 +2,7 @@
 
 **Panel interactivo para visualizar y explorar el análisis IA aplicado a DevOps.**
 
-Este proyecto proporciona una interfaz construida con Streamlit para mostrar los prompts, las respuestas de la IA y los metadatos simbólicos generados por el sistema [`devops-ai-lab`](https://github.com/dorado-ai-devops/devops-ai-lab).
+Este proyecto proporciona una interfaz construida con Streamlit para mostrar los prompts, las respuestas de la IA y los metadatos generados por el sistema [`devops-ai-lab`](https://github.com/dorado-ai-devops/devops-ai-lab).
 
 ## 🔍 Funcionalidades
 
