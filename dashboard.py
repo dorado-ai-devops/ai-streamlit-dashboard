@@ -80,9 +80,13 @@ df_filtered = df[
     df["microservice"].isin(microservices) & df["type"].isin(types)
 ]
 
-# Configuración de AgGrid
+# AgGrid: configuración completa
 st.markdown("### Registros encontrados")
-gb = GridOptionsBuilder.from_dataframe(df_filtered[["timestamp", "type", "microservice", "summary", "tags"]])
+gb = GridOptionsBuilder.from_dataframe(df_filtered)
+
+# Ocultar columnas que no deben mostrarse pero sí usarse en detalle
+gb.configure_columns(["input", "prompt", "response"], hide=True)
+
 gb.configure_pagination(paginationAutoPageSize=True)
 gb.configure_default_column(groupable=False, editable=False, filter=True, resizable=True)
 gb.configure_selection('single', use_checkbox=True)
@@ -96,9 +100,9 @@ grid_response = AgGrid(
     fit_columns_on_grid_load=True
 )
 
-# Mostrar detalle si se selecciona una fila
+# Mostrar detalles si hay selección
 selected_rows = grid_response.get('selected_rows', [])
-if isinstance(selected_rows, list) and len(selected_rows) > 0:
+if selected_rows:
     selected = selected_rows[0]
 
     st.markdown("### Detalle de ejecución seleccionado")
