@@ -1,5 +1,5 @@
 IMAGE_NAME=ai-streamlit-dashboard
-VERSION=v0.4.1
+VERSION=v0.4.2
 CLUSTER_NAME=devops-ai
 REGISTRY=localhost:5000
 HELM_VALUES=../devops-ai-lab/manifests/helm-dashboard/values.yaml
