@@ -9,20 +9,45 @@ st.markdown("Visualiza interacciones de IA con logs, Helm Charts y pipelines.")
 # Cargar los datos
 df = load_data()
 
-# Filtros por tipo
-tipo = st.sidebar.multiselect("Filtrar por tipo", options=df["type"].unique(), default=df["type"].unique())
-df_filtered = df[df["type"].isin(tipo)]
+if df.empty:
+    st.warning("No se han encontrado datos para mostrar.")
+    st.stop()
+
+# Filtro principal por microservicio
+microservices = st.sidebar.multiselect(
+    "Filtrar por microservicio",
+    options=sorted(df["microservice"].unique()),
+    default=list(df["microservice"].unique())
+)
+
+df_filtered = df[df["microservice"].isin(microservices)]
 
 # Tabla principal
-st.dataframe(df_filtered[["timestamp", "type", "summary", "tags"]], use_container_width=True)
+st.markdown("### Registros encontrados")
+st.dataframe(
+    df_filtered[["timestamp", "type", "microservice", "summary", "tags"]],
+    use_container_width=True
+)
 
 # Vista detallada
 st.markdown("### Detalle de ejecución")
-row = st.selectbox("Selecciona una fila", df_filtered.index)
-selected = df_filtered.loc[row]
 
-st.code(selected["input"], language="bash")
-st.markdown("**Prompt enviado:**")
-st.code(selected["prompt"], language="markdown")
-st.markdown("**Respuesta del modelo:**")
-st.code(selected["response"], language="markdown")
+if not df_filtered.empty:
+    row = st.selectbox(
+        "Selecciona una fila",
+        df_filtered.index,
+        format_func=lambda i: f"{df_filtered.loc[i]['timestamp']} | {df_filtered.loc[i]['microservice']} | {df_filtered.loc[i]['summary'][:50]}..."
+    )
+
+    selected = df_filtered.loc[row]
+
+    st.markdown("**Input:**")
+    st.code(selected["input"], language="bash")
+
+    st.markdown("**Prompt enviado:**")
+    st.code(selected["prompt"], language="markdown")
+
+    st.markdown("**Respuesta del modelo:**")
+    st.code(selected["response"], language="markdown")
+else:
+    st.info("No hay registros que coincidan con el filtro seleccionado.")
