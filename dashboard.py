@@ -98,7 +98,7 @@ grid_response = AgGrid(
 
 # Mostrar detalle si se selecciona una fila
 selected_rows = grid_response.get('selected_rows', [])
-if selected_rows and isinstance(selected_rows, list):
+if isinstance(selected_rows, list) and len(selected_rows) > 0:
     selected = selected_rows[0]
 
     st.markdown("### Detalle de ejecución seleccionado")
