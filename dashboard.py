@@ -97,24 +97,25 @@ grid_response = AgGrid(
 )
 
 # Mostrar detalle si se selecciona una fila
-if grid_response['selected_rows']:
-    selected = pd.DataFrame(grid_response['selected_rows']).iloc[0]
+selected_rows = grid_response.get('selected_rows', [])
+if selected_rows and isinstance(selected_rows, list):
+    selected = selected_rows[0]
 
     st.markdown("### Detalle de ejecución seleccionado")
 
     with st.expander("🔍 Input"):
-        st.code(selected["input"], language="bash")
+        st.code(selected.get("input", ""), language="bash")
 
     with st.expander("📤 Prompt enviado"):
-        st.code(selected["prompt"], language="markdown")
+        st.code(selected.get("prompt", ""), language="markdown")
 
     with st.expander("📥 Respuesta del modelo"):
-        st.code(selected["response"], language="markdown")
+        st.code(selected.get("response", ""), language="markdown")
 
     st.download_button(
         label="📥 Descargar resultado",
         data=pd.DataFrame([selected]).to_csv(index=False).encode("utf-8"),
-        file_name=f"registro_{selected['timestamp']}.csv",
+        file_name=f"registro_{selected.get('timestamp', 'registro')}.csv",
         mime="text/csv"
     )
 else:
