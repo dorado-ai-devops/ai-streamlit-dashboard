@@ -16,6 +16,7 @@ Este proyecto proporciona una interfaz construida con Streamlit para mostrar los
 
 ## 📁 Estructura del proyecto
 
+
 ```
 ai-streamlit-dashboard/
 ├── dashboard.py         # App principal de Streamlit
