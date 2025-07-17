@@ -1,34 +1,35 @@
-IMAGE_NAME=ai-streamlit-dashboard
-VERSION=v0.4.7
-CLUSTER_NAME=devops-ai
-REGISTRY=localhost:5000
-HELM_VALUES=../devops-ai-lab/manifests/helm-dashboard/values.yaml
-ARGO_APP_NAME=ai-dashboard
+IMAGE_NAME     := ai-streamlit-dashboard
+VERSION        := v1.0.0
+REGISTRY       := localhost:5000
+HELM_VALUES    := ../devops-ai-lab/manifests/helm-dashboard/values.yaml
+ARGO_APP_NAME  := ai-dashboard
 
-.PHONY: all build tag push load update-values sync release run
+.PHONY: all build tag push update-values sync release run
 
-all: build load
+all: release
 
 build:
 	docker build --no-cache -t $(IMAGE_NAME):$(VERSION) .
 
-tag:
+tag: build
 	docker tag $(IMAGE_NAME):$(VERSION) $(REGISTRY)/$(IMAGE_NAME):$(VERSION)
 
 push: tag
 	docker push $(REGISTRY)/$(IMAGE_NAME):$(VERSION)
 
-load:
-	kind load docker-image $(IMAGE_NAME):$(VERSION) --name $(CLUSTER_NAME)
-
 update-values:
-	sed -i "s/^ *tag: .*/  tag: $(VERSION)/" $(HELM_VALUES)
+	@echo "Actualizando Helm values para $(IMAGE_NAME)…"
+	# Actualiza el repositorio
+	sed -i "s|^\(\s*repository:\s*\).*|\1$(REGISTRY)/$(IMAGE_NAME)|" $(HELM_VALUES)
+	# Actualiza la versión (tag)
+	sed -i "s|^\(\s*tag:\s*\).*|\1\"$(VERSION)\"|"           $(HELM_VALUES)
 
 sync:
+	@echo "Sincronizando ArgoCD (app: $(ARGO_APP_NAME))…"
 	argocd app sync $(ARGO_APP_NAME)
 
-release: build load update-values sync
-	@echo "Release completo: $(IMAGE_NAME):$(VERSION) desplegado y sincronizado con ArgoCD."
+release: push update-values sync
+	@echo "Release completo: $(REGISTRY)/$(IMAGE_NAME):$(VERSION) desplegado y sincronizado con ArgoCD."
 
 run:
-	docker run -p 8501:8501 $(IMAGE_NAME):$(VERSION)
+	docker run -p 8501:8501 $(REGISTRY)/$(IMAGE_NAME):$(VERSION)
