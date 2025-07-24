@@ -10,7 +10,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 # Configuración inicial
 # -----------------------------------
 st.set_page_config(page_title="AI DevOps Dashboard", layout="wide")
-st.title("📊 DevOps IA Dashboard")
+st.title(" DevOps IA Dashboard")
 st.markdown(
     "Visualiza las interacciones de los LLMs con logs, Helm Charts y generación de pipelines."
 )
@@ -167,17 +167,17 @@ if len(selected_rows) > 0:
     cols[1].metric("Tipo", selected.get("type"))
     cols[2].metric("Servicio", selected.get("microservice"))
 
-    with st.expander("🔍 Input"):
+    with st.expander(" Input"):
         st.code(selected.get("input", ""), language="bash")
 
-    with st.expander("📤 Prompt enviado"):
+    with st.expander(" Prompt enviado"):
         st.code(selected.get("prompt", ""), language="markdown")
 
-    with st.expander("📥 Respuesta del modelo"):
+    with st.expander(" Respuesta del modelo"):
         st.code(selected.get("response", ""), language="markdown")
 
     st.download_button(
-        label="📥 Descargar registro CSV",
+        label=" Descargar registro CSV",
         data=pd.DataFrame([selected]).to_csv(index=False).encode("utf-8"),
         file_name=f"registro_{selected.get('timestamp', 'registro')}.csv",
         mime="text/csv",
